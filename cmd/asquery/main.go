@@ -8,12 +8,12 @@ import (
 )
 
 const (
-	name = "gitquery"
+	name = "asquery"
 )
 
 func main() {
 	parser := flags.NewNamedParser(name, flags.Default)
-	parser.AddCommand("query", "Execute a SQL query a repository.", "", &CmdQuery{})
+	parser.AddCommand("query", "Execute a SQL query a asset.", "", &CmdQuery{})
 	parser.AddCommand("shell", "Start an interactive session.", "", &CmdShell{})
 	parser.AddCommand("version", "Show the version information.", "", &CmdVersion{})
 
