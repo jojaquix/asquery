@@ -1,15 +1,16 @@
 package main
 
 import (
+	"asquery"
+	"asquery/internal/format"
 	"database/sql"
 	"os"
 	"path/filepath"
 
-	"gopkg.in/sqle/gitquery.v0"
-	"gopkg.in/sqle/gitquery.v0/internal/format"
+	//"gopkg.in/sqle/gitquery.v0"
+	//"gopkg.in/sqle/gitquery.v0/internal/format"
 	"gopkg.in/sqle/sqle.v0"
 
-	gogit "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
 )
 
@@ -26,13 +27,13 @@ func (c *cmdQueryBase) buildDatabase() error {
 	c.print("opening %q repository...\n", c.Path)
 
 	var err error
-	r, err := gogit.PlainOpen(c.Path)
-	if err != nil {
-		return err
-	}
+	//	r, err := gogit.PlainOpen(c.Path)
+	//	if err != nil {
+	//		return err
+	//	}
 
 	c.name = filepath.Base(filepath.Join(c.Path, ".."))
-	sqle.DefaultEngine.AddDatabase(gitquery.NewDatabase(c.name, r))
+	sqle.DefaultEngine.AddDatabase(gitquery.NewDatabase(c.name))
 	c.db, err = sql.Open(sqle.DriverName, "")
 	return err
 }

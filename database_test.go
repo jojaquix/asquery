@@ -5,12 +5,10 @@ import (
 	"testing"
 
 	"gopkg.in/sqle/sqle.v0/sql"
+	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
 
 	"github.com/stretchr/testify/assert"
-	"gopkg.in/src-d/go-billy.v4/memfs"
-	"gopkg.in/src-d/go-git-fixtures.v3"
-	"gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/storage/filesystem"
+	//"gopkg.in/src-d/go-git-fixtures.v3"
 )
 
 func init() {
@@ -18,7 +16,7 @@ func init() {
 }
 
 const (
-	testDBName = "foo"
+	testDBName = "sysInfo"
 )
 
 func TestDatabase_Tables(t *testing.T) {
@@ -35,12 +33,13 @@ func TestDatabase_Tables(t *testing.T) {
 
 	sort.Strings(tableNames)
 	expected := []string{
-		commitsTableName,
-		referencesTableName,
-		treeEntriesTableName,
-		tagsTableName,
-		blobsTableName,
-		objectsTableName,
+		osVersionTableName,
+		//commitsTableName,
+		//referencesTableName,
+		//treeEntriesTableName,
+		//tagsTableName,
+		//blobsTableName,
+		//objectsTableName,
 	}
 	sort.Strings(expected)
 
@@ -58,13 +57,14 @@ func TestDatabase_Name(t *testing.T) {
 func getDB(assert *assert.Assertions, fixture *fixtures.Fixture,
 	name string) sql.Database {
 
-	s, err := filesystem.NewStorage(fixture.DotGit())
-	assert.NoError(err)
+	///s, err := filesystem.NewStorage(fixture.DotGit())
+	//assert.NoError(err)
 
-	r, err := git.Open(s, memfs.New())
-	assert.NoError(err)
+	//TODO add sysInfo or something object.
+	//r, err := git.Open(s, memfs.New())
+	//assert.NoError(err)
 
-	db := NewDatabase(name, r)
+	db := NewDatabase(name)
 	assert.NotNil(db)
 
 	return db
