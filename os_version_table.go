@@ -1,10 +1,9 @@
 package gitquery
 
 import (
-	"io"
+	"asquery/extraction"
 
 	"gopkg.in/sqle/sqle.v0/sql"
-	//"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 type OsVersionTable struct {
@@ -47,7 +46,7 @@ func (r *OsVersionTable) TransformExpressionsUp(f func(sql.Expression) sql.Expre
 
 func (r OsVersionTable) RowIter() (sql.RowIter, error) {
 
-	var iter sql.RowIter = &OsVersionInfoIter{}
+	var iter sql.RowIter = &osVersionInfoIter{osExtractor: extraction.NewOsExtractor()}
 	var err error
 
 	if err != nil {
@@ -61,48 +60,29 @@ func (OsVersionTable) Children() []sql.Node {
 	return []sql.Node{}
 }
 
-//TODO going to other file ??
-
-//OsVersionInfo ...
-type OsVersionInfo struct {
-	name    string
-	version string
+type osVersionInfoIter struct {
+	osExtractor extraction.OsExtractor
 }
 
-//OsVersinInfoIterable ... is a generic closable interface for iterating over OsVersionInfo
-type OsVersionInfoIterable interface {
-	Next() (*OsVersionInfo, error)
-	ForEach(func(*OsVersionInfo) error) error
-	Close()
-}
+func (iter *osVersionInfoIter) Next() (sql.Row, error) {
 
-type OsVersionInfoIter struct {
-	//xname string
-	count int
-}
-
-func (i *OsVersionInfoIter) Next() (sql.Row, error) {
-	var osVersionInfo = &OsVersionInfo{name: "jhonjamesOs", version: "1"}
-	var err error
-	//if err != nil {
-	if i.count > 0 {
-		err = io.EOF
+	osVersionInfo, err := iter.osExtractor.Next()
+	if err != nil {
 		return nil, err
 	}
 
-	i.count++
 	return osVersionInfoToRow(osVersionInfo), nil
 }
 
-func (i *OsVersionInfoIter) Close() error {
-	//i.i.Close()
+func (iter *osVersionInfoIter) Close() error {
+	iter.osExtractor.Close()
 	return nil
 }
 
-func osVersionInfoToRow(info *OsVersionInfo) sql.Row {
+func osVersionInfoToRow(info *extraction.OsVersionInfo) sql.Row {
 	return sql.NewRow(
-		info.name,
-		info.version,
+		info.Name,
+		info.Version,
 		nil,
 		nil,
 		nil,
