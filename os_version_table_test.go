@@ -1,4 +1,4 @@
-package gitquery
+package asquery
 
 import (
 	"testing"

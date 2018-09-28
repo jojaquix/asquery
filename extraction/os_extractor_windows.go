@@ -47,7 +47,7 @@ func (osExtractor *wOsExtractor) Next() (*OsVersionInfo, error) {
 	return osVersionInfo, nil
 }
 
-func (wOsExtractor) ForEach(func(*OsVersionInfo) error) error {
+func (*wOsExtractor) ForEach(func(*OsVersionInfo) error) error {
 	//not implemented yet
 	return nil
 }

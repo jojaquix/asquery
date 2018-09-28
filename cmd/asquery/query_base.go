@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	//"gopkg.in/sqle/gitquery.v0"
-	//"gopkg.in/sqle/gitquery.v0/internal/format"
 	"gopkg.in/sqle/sqle.v0"
 
 	"gopkg.in/src-d/go-git.v4/utils/ioutil"
@@ -33,7 +31,7 @@ func (c *cmdQueryBase) buildDatabase() error {
 	//	}
 
 	c.name = filepath.Base(filepath.Join(c.Path, ".."))
-	sqle.DefaultEngine.AddDatabase(gitquery.NewDatabase(c.name))
+	sqle.DefaultEngine.AddDatabase(asquery.NewDatabase(c.name))
 	c.db, err = sql.Open(sqle.DriverName, "")
 	return err
 }

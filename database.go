@@ -1,4 +1,4 @@
-package gitquery
+package asquery
 
 import (
 	"gopkg.in/sqle/sqle.v0/sql"
@@ -7,13 +7,13 @@ import (
 
 const (
 	// TODO 'references' is a reserved keyword into the parser
-	osVersionTableName   = "os_version"
-	referencesTableName  = "refs"
-	commitsTableName     = "commits"
-	tagsTableName        = "tags"
-	blobsTableName       = "blobs"
-	treeEntriesTableName = "tree_entries"
-	objectsTableName     = "objects"
+	osVersionTableName = "os_version"
+	//referencesTableName  = "refs"
+	//commitsTableName     = "commits"
+	//tagsTableName        = "tags"
+	//blobsTableName       = "blobs"
+	//treeEntriesTableName = "tree_entries"
+	//objectsTableName     = "objects"
 )
 
 type Database struct {
