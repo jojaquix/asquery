@@ -1,4 +1,4 @@
-package asquery
+package tables
 
 import (
 	"testing"

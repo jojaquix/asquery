@@ -1,19 +1,20 @@
-package asquery
+package engine
 
 import (
+	"asquery/tables"
 	"gopkg.in/sqle/sqle.v0/sql"
 	//"gopkg.in/src-d/go-git.v4"
 )
 
 const (
-	// TODO 'references' is a reserved keyword into the parser
-	osVersionTableName = "os_version"
-	//referencesTableName  = "refs"
-	//commitsTableName     = "commits"
-	//tagsTableName        = "tags"
-	//blobsTableName       = "blobs"
-	//treeEntriesTableName = "tree_entries"
-	//objectsTableName     = "objects"
+// TODO 'references' is a reserved keyword into the parser
+//osVersionTableName = "os_version"
+//referencesTableName  = "refs"
+//commitsTableName     = "commits"
+//tagsTableName        = "tags"
+//blobsTableName       = "blobs"
+//treeEntriesTableName = "tree_entries"
+//objectsTableName     = "objects"
 )
 
 type Database struct {
@@ -30,7 +31,7 @@ type Database struct {
 func NewDatabase(name string) sql.Database {
 	return &Database{
 		name:           name,
-		osVersionTable: newOsVersionTable(),
+		osVersionTable: tables.NewOsVersionTable(),
 		//cr:   newCommitsTable(r),
 		//rr:   newReferencesTable(r),
 		//tr:   newTagsTable(r),
@@ -46,7 +47,7 @@ func (d *Database) Name() string {
 
 func (d *Database) Tables() map[string]sql.Table {
 	return map[string]sql.Table{
-		osVersionTableName: d.osVersionTable,
+		d.osVersionTable.Name(): d.osVersionTable,
 		//commitsTableName:     d.cr,
 		//tagsTableName:        d.tr,
 		//referencesTableName:  d.rr,

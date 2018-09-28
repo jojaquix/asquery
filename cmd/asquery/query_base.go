@@ -1,7 +1,7 @@
 package main
 
 import (
-	"asquery"
+	"asquery/engine"
 	"asquery/internal/format"
 	"database/sql"
 	"os"
@@ -31,7 +31,7 @@ func (c *cmdQueryBase) buildDatabase() error {
 	//	}
 
 	c.name = filepath.Base(filepath.Join(c.Path, ".."))
-	sqle.DefaultEngine.AddDatabase(asquery.NewDatabase(c.name))
+	sqle.DefaultEngine.AddDatabase(engine.NewDatabase(c.name))
 	c.db, err = sql.Open(sqle.DriverName, "")
 	return err
 }

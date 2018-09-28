@@ -1,4 +1,4 @@
-package asquery
+package tables
 
 import (
 	"asquery/extraction"
@@ -10,7 +10,7 @@ type OsVersionTable struct {
 	//r *git.Repository
 }
 
-func newOsVersionTable() sql.Table {
+func NewOsVersionTable() sql.Table {
 	return &OsVersionTable{}
 }
 
@@ -19,7 +19,8 @@ func (OsVersionTable) Resolved() bool {
 }
 
 func (OsVersionTable) Name() string {
-	return osVersionTableName
+	//return osVersionTableName
+	return "os_version"
 }
 
 func (OsVersionTable) Schema() sql.Schema {
