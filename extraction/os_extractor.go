@@ -9,7 +9,6 @@ type OsVersionInfo struct {
 type OsVersionInfoIterable interface {
 	Next() (*OsVersionInfo, error)
 	ForEach(func(*OsVersionInfo) error) error
-	Close()
 }
 
 type OsExtractor interface {

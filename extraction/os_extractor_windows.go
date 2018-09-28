@@ -51,7 +51,3 @@ func (*wOsExtractor) ForEach(func(*OsVersionInfo) error) error {
 	//not implemented yet
 	return nil
 }
-
-func (wOsExtractor) Close() {
-	//not necessary
-}
