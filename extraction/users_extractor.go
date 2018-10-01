@@ -15,11 +15,11 @@ type UserInfo struct {
 	Ttype       string
 }
 
-//type UserExtractor interface {
-//	Next() (*UserInfo, error)
-//	ForEach(func(*UserInfo) error) error
-//}
-
 type UserExtractor interface {
-	GetUsers() ([]UserInfo, error)
+	Next() (*UserInfo, error)
+	ForEach(func(*UserInfo) error) error
 }
+
+//type UserExtractor interface {
+//	GetUsers() ([]UserInfo, error)
+//}

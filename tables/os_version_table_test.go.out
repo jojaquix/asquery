@@ -9,11 +9,15 @@ import (
 	"gopkg.in/src-d/go-git-fixtures.v3"
 )
 
+const (
+	osVersionTableName = "os_version"
+)
+
 func TestCommitsTable_Name(t *testing.T) {
 	assert := assert.New(t)
 
 	f := fixtures.Basic().One()
-	table := getTable(assert, f, osVersionTableName)
+	table := engine.GetTable(assert, f, osVersionTableName)
 	assert.Equal(osVersionTableName, table.Name())
 }
 
@@ -21,7 +25,7 @@ func TestCommitsTable_Children(t *testing.T) {
 	assert := assert.New(t)
 
 	f := fixtures.Basic().One()
-	table := getTable(assert, f, osVersionTableName)
+	table := GetTable(assert, f, osVersionTableName)
 	assert.Equal(0, len(table.Children()))
 }
 
@@ -29,7 +33,7 @@ func TestCommitsTable_RowIter(t *testing.T) {
 	assert := assert.New(t)
 
 	f := fixtures.Basic().One()
-	table := getTable(assert, f, osVersionTableName)
+	table := GetTable(assert, f, osVersionTableName)
 
 	rows, err := sql.NodeToRows(table)
 	assert.Nil(err)

@@ -20,6 +20,7 @@ const (
 type Database struct {
 	name           string
 	osVersionTable sql.Table
+	usersTable     sql.Table
 	//cr   sql.Table
 	//tr   sql.Table
 	//rr   sql.Table
@@ -32,6 +33,7 @@ func NewDatabase(name string) sql.Database {
 	return &Database{
 		name:           name,
 		osVersionTable: tables.NewOsVersionTable(),
+		usersTable:     tables.NewUsersTable(),
 		//cr:   newCommitsTable(r),
 		//rr:   newReferencesTable(r),
 		//tr:   newTagsTable(r),
@@ -48,6 +50,7 @@ func (d *Database) Name() string {
 func (d *Database) Tables() map[string]sql.Table {
 	return map[string]sql.Table{
 		d.osVersionTable.Name(): d.osVersionTable,
+		d.usersTable.Name():     d.usersTable,
 		//commitsTableName:     d.cr,
 		//tagsTableName:        d.tr,
 		//referencesTableName:  d.rr,

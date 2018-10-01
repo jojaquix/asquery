@@ -1,11 +1,12 @@
 package engine
 
 import (
-	"sort"
-	"testing"
-
+	gosql "database/sql"
+	"gopkg.in/sqle/sqle.v0"
 	"gopkg.in/sqle/sqle.v0/sql"
 	fixtures "gopkg.in/src-d/go-git-fixtures.v3"
+	"sort"
+	"testing"
 
 	"github.com/stretchr/testify/assert"
 	//"gopkg.in/src-d/go-git-fixtures.v3"
@@ -33,7 +34,7 @@ func TestDatabase_Tables(t *testing.T) {
 
 	sort.Strings(tableNames)
 	expected := []string{
-		osVersionTableName,
+		"os_version",
 		//commitsTableName,
 		//referencesTableName,
 		//treeEntriesTableName,
@@ -46,6 +47,29 @@ func TestDatabase_Tables(t *testing.T) {
 	assert.Equal(expected, tableNames)
 }
 
+func TestOsVersionQuery(t *testing.T) {
+	assert := assert.New(t)
+	f := fixtures.Basic().One()
+	db := getDB(assert, f, testDBName)
+
+	sqle.DefaultEngine.AddDatabase(db)
+	cx, err := gosql.Open(sqle.DriverName, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := cx.Query("select * from os_version where major = int64(10)")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for res.Next() {
+
+	}
+
+}
+
 func TestDatabase_Name(t *testing.T) {
 	assert := assert.New(t)
 
@@ -56,13 +80,6 @@ func TestDatabase_Name(t *testing.T) {
 
 func getDB(assert *assert.Assertions, fixture *fixtures.Fixture,
 	name string) sql.Database {
-
-	///s, err := filesystem.NewStorage(fixture.DotGit())
-	//assert.NoError(err)
-
-	//TODO add sysInfo or something object.
-	//r, err := git.Open(s, memfs.New())
-	//assert.NoError(err)
 
 	db := NewDatabase(name)
 	assert.NotNil(db)

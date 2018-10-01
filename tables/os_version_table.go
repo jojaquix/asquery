@@ -31,9 +31,10 @@ func (OsVersionTable) Schema() sql.Schema {
 		{Name: "name", Type: sql.String, Nullable: false},
 		{Name: "version", Type: sql.String, Nullable: false},
 
-		{Name: "major", Type: sql.Integer, Nullable: true},
-		{Name: "minor", Type: sql.Integer, Nullable: true},
-		{Name: "patch", Type: sql.Integer, Nullable: true},
+		{Name: "major", Type: sql.BigInteger, Nullable: true},
+		{Name: "minor", Type: sql.BigInteger, Nullable: true},
+		{Name: "patch", Type: sql.BigInteger, Nullable: true},
+
 		{Name: "build", Type: sql.String, Nullable: true},
 
 		{Name: "platform", Type: sql.String, Nullable: true},
@@ -108,12 +109,14 @@ func osVersionInfoToRow(info *extraction.OsVersionInfo) sql.Row {
 	iminor, _ := strconv.Atoi(minor)
 	ipatch, _ := strconv.Atoi(patch)
 
+	//TODO why queries only works with Type.BigInteger <-> int64
+
 	return sql.NewRow(
 		info.Name,
 		version,
-		int32(imajor),
-		int32(iminor),
-		int32(ipatch),
+		int64(imajor),
+		int64(iminor),
+		int64(ipatch),
 		build,
 		"windows",
 		"windows",
