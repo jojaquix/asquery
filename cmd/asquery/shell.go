@@ -38,7 +38,7 @@ func (c *CmdShell) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Println("          ", white("git")+blue("query"), "shell")
+	fmt.Println("          ", white("as")+blue("query"), "shell")
 	fmt.Println("           -----------")
 	fmt.Println("You must end your queries with ';'")
 	fmt.Println("")
