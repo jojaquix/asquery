@@ -62,21 +62,16 @@ func (iter *usersIter) Next() (sql.Row, error) {
 	//test return just thow users
 	//change to actual extractor call
 	if iter.rowPtr == nil && !iter.fetched {
-		{
-			r := extraction.Row{}
-			r["uuid"] = "10"
-			r["username"] = "james"
-			iter.info.PushBack(r)
+		var err error
+		iter.info, err = extraction.GetUsers()
+		if err == nil {
+			iter.rowPtr = iter.info.Front()
+			iter.fetched = true
 		}
-		{
-			r := extraction.Row{}
-			r["uuid"] = "20"
-			r["username"] = "jhon"
-			iter.info.PushBack(r)
-		}
+		//else {
+		//	//TODO logging
+		//}
 
-		iter.rowPtr = iter.info.Front()
-		iter.fetched = true
 	}
 
 	if iter.rowPtr != nil {
@@ -98,7 +93,7 @@ func (iter *usersIter) Close() error {
 
 func userInfoToRow(info extraction.Row) sql.Row {
 
-	//Todo why queries only works with Type.BigInteger <-> int64
+	//TODO why queries only works with Type.BigInteger <-> int64
 	imajor, _ := strconv.Atoi(string(info["uuid"]))
 
 	return sql.NewRow(

@@ -1,14 +1,20 @@
 package extraction
 
-//go generate go run mksyscall_windows.go -output zwindows.go mk_windows.go
+// to genarate
+// compile mksyscall_windows using go build .\mksyscall_windows.go
+// and then use the executable over this file: .\mksyscall_windows.exe  -output net_windows.go .\mk_windows.go
 
 type (
 	LPVOID         uintptr
 	LMSTR          *uint16
+	WORD           uint16
 	DWORD          uint32
+	BYTE           byte
 	LPBYTE         *byte
 	LPDWORD        *uint32
 	LPWSTR         *uint16
+	LPCWSTR        *uint16
+	WSTR           uint16
 	NET_API_STATUS DWORD
 
 	USER_INFO_1 struct {
@@ -100,14 +106,17 @@ const (
 
 	LG_INCLUDE_INDIRECT = (0x0001)
 
-	// etc...
+	NERR_Success = 0
+
+	ERROR_MORE_DATA = 234 // dderror
+
 )
 
 //sys NetApiBufferFree(Buffer LPVOID) (status NET_API_STATUS) = netapi32.NetApiBufferFree
-//sys NetUserAdd(servername LMSTR, level DWORD, buf LPBYTE, parm_err LPDWORD) (status NET_API_STATUS) = netapi32.NetUserAdd
-//sys NetUserChangePassword(domainname LPCWSTR, username LPCWSTR, oldpassword LPCWSTR, newpassword LPCWSTR) (status NET_API_STATUS) = netapi32.NetUserChangePassword
-//sys NetUserDel(servername LPCWSTR, username LPCWSTR) (status NET_API_STATUS) = netapi32.NetUserDel
-//sys NetUserEnum(servername LPCWSTR, level DWORD, filter DWORD, bufptr *LPBYTE, prefmaxlen DWORD, entriesread LPDWORD, totalentries LPDWORD, resume_handle LPDWORD) (status NET_API_STATUS) = netapi32.NetUserEnum
-//sys NetUserGetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, bufptr *LPBYTE, prefmaxlen DWORD, entriesread LPDWORD, totalentries LPDWORD) (status NET_API_STATUS) = netapi32.NetUserGetGroups
-//sys NetUserSetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, num_entries DWORD) (status NET_API_STATUS) = netapi32.NetUserSetGroups
-//sys NetUserSetInfo(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, parm_err LPDWORD) (status NET_API_STATUS) = netapi32.NetUserSetInfo
+//NetUserAdd(servername LMSTR, level DWORD, buf LPBYTE, parm_err LPDWORD) (status NET_API_STATUS) = netapi32.NetUserAdd
+//NetUserChangePassword(domainname LPCWSTR, username LPCWSTR, oldpassword LPCWSTR, newpassword LPCWSTR) (status NET_API_STATUS) = netapi32.NetUserChangePassword
+//NetUserDel(servername LPCWSTR, username LPCWSTR) (status NET_API_STATUS) = netapi32.NetUserDel
+//sys NetUserEnum(servername *WSTR, level DWORD, filter DWORD, bufptr **BYTE, prefmaxlen DWORD, entriesread *WORD, totalentries *DWORD, resume_handle *DWORD) (status NET_API_STATUS) = netapi32.NetUserEnum
+//NetUserGetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, bufptr *LPBYTE, prefmaxlen DWORD, entriesread LPDWORD, totalentries LPDWORD) (status NET_API_STATUS) = netapi32.NetUserGetGroups
+//NetUserSetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, num_entries DWORD) (status NET_API_STATUS) = netapi32.NetUserSetGroups
+//NetUserSetInfo(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, parm_err LPDWORD) (status NET_API_STATUS) = netapi32.NetUserSetInfo
