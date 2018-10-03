@@ -5,10 +5,82 @@ package extraction
 import (
 	"container/list"
 	"unsafe"
+	//"syscall"
+
 	//"golang.org/x/text/encoding/unicode"
 	//"golang.org/x/sys/windows"
 	//"golang.org/x/sys/windows/registry"
 )
+
+
+const (	
+	kRegProfilePath = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList"
+)
+
+var kWellKnownSids = [...]string {
+    "S-1-5-1",
+    "S-1-5-2",
+    "S-1-5-3",
+    "S-1-5-4",
+    "S-1-5-6",
+    "S-1-5-7",
+    "S-1-5-8",
+    "S-1-5-9",
+    "S-1-5-10",
+    "S-1-5-11",
+    "S-1-5-12",
+    "S-1-5-13",
+    "S-1-5-18",
+    "S-1-5-19",
+    "S-1-5-20",
+    "S-1-5-21",
+    "S-1-5-32",
+}
+
+//var kRegistryStringTypes = [...] int{
+//	REG_SZ, REG_MULTI_SZ, REG_EXPAND_SZ,
+//	}
+//
+
+
+//const std::map<DWORD, std::string> kRegistryTypes = {
+//    {REG_BINARY, "REG_BINARY"},
+//    {REG_DWORD, "REG_DWORD"},
+//    {REG_DWORD_BIG_ENDIAN, "REG_DWORD_BIG_ENDIAN"},
+//    {REG_EXPAND_SZ, "REG_EXPAND_SZ"},
+//    {REG_LINK, "REG_LINK"},
+//    {REG_MULTI_SZ, "REG_MULTI_SZ"},
+//    {REG_NONE, "REG_NONE"},
+//    {REG_QWORD, "REG_QWORD"},
+//    {REG_SZ, "REG_SZ"},
+//    {REG_FULL_RESOURCE_DESCRIPTOR, "REG_FULL_RESOURCE_DESCRIPTOR"},
+//    {REG_RESOURCE_LIST, "REG_RESOURCE_LIST"},
+//};
+//
+//const std::vector<std::string> kClassKeys = {
+//    "HKEY_USERS\\%\\SOFTWARE\\Classes\\CLSID",
+//    "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID"};
+//
+//const std::vector<std::string> kClassExecSubKeys = {
+//    "InProcServer%", "InProcHandler%", "LocalServer%"};
+//
+
+
+func getUserHomeDir (sid string) string {
+	
+	_, err := queryKey(kRegProfilePath + kRegSep + sid);
+	if err !=nil {
+		return ""
+	}
+
+//	for (const auto& kKey : res) {
+//	  if (kKey.at("name") == "ProfileImagePath") {
+//		return kKey.at("data");
+//	  }
+//	}
+	return ""
+	
+  }
 
 func GetUsers() (list.List, error) {
 	var results list.List
@@ -95,8 +167,8 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 			r["uid_signed"] = r["uid"]
 			r["gid_signed"] = r["gid"]
 			r["description"] =	StringFromLPWSTR(userInfo4Slide[0].usri4_comment, 2048)
-			r["directory"] = ""
-			r["shell"] = "C:\\Windows\\System32\\cmd.exe";
+			r["directory"] = getUserHomeDir(sidString)
+			r["shell"] = "C:\\Windows\\System32\\cmd.exe"
 			r["type"] = "local";
 
 			results.PushBack(r)
