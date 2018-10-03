@@ -41,6 +41,7 @@ var (
 
 	procNetApiBufferFree = modnetapi32.NewProc("NetApiBufferFree")
 	procNetUserEnum      = modnetapi32.NewProc("NetUserEnum")
+	procNetUserGetInfo   = modnetapi32.NewProc("NetUserGetInfo")
 )
 
 func NetApiBufferFree(Buffer LPVOID) (status NET_API_STATUS) {
@@ -51,6 +52,12 @@ func NetApiBufferFree(Buffer LPVOID) (status NET_API_STATUS) {
 
 func NetUserEnum(servername *WSTR, level DWORD, filter DWORD, bufptr **BYTE, prefmaxlen DWORD, entriesread *WORD, totalentries *DWORD, resume_handle *DWORD) (status NET_API_STATUS) {
 	r0, _, _ := syscall.Syscall9(procNetUserEnum.Addr(), 8, uintptr(unsafe.Pointer(servername)), uintptr(level), uintptr(filter), uintptr(unsafe.Pointer(bufptr)), uintptr(prefmaxlen), uintptr(unsafe.Pointer(entriesread)), uintptr(unsafe.Pointer(totalentries)), uintptr(unsafe.Pointer(resume_handle)), 0)
+	status = NET_API_STATUS(r0)
+	return
+}
+
+func NetUserGetInfo(servername *WSTR, username *WSTR, level DWORD, bufptr **BYTE) (status NET_API_STATUS) {
+	r0, _, _ := syscall.Syscall6(procNetUserGetInfo.Addr(), 4, uintptr(unsafe.Pointer(servername)), uintptr(unsafe.Pointer(username)), uintptr(level), uintptr(unsafe.Pointer(bufptr)), 0, 0)
 	status = NET_API_STATUS(r0)
 	return
 }

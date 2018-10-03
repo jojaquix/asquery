@@ -1,11 +1,15 @@
 package extraction
 
+import (
+	"syscall"
+)
+
 // to genarate
 // compile mksyscall_windows using go build .\mksyscall_windows.go
 // and then use the executable over this file: .\mksyscall_windows.exe  -output net_windows.go .\mk_windows.go
 
 type (
-	LPVOID         uintptr
+	LPVOID         uintptr	
 	LMSTR          *uint16
 	WORD           uint16
 	DWORD          uint32
@@ -14,8 +18,9 @@ type (
 	LPDWORD        *uint32
 	LPWSTR         *uint16
 	LPCWSTR        *uint16
-	WSTR           uint16
+	WSTR           uint16	
 	NET_API_STATUS DWORD
+
 
 	USER_INFO_1 struct {
 		Usri1_name         LPWSTR
@@ -27,6 +32,72 @@ type (
 		Usri1_flags        DWORD
 		Usri1_script_path  LPWSTR
 	}
+
+
+	USER_INFO_3 struct {
+		  usri3_name				LPWSTR 
+		  usri3_password			LPWSTR 
+		  usri3_password_age		DWORD  
+		  usri3_priv				DWORD  
+		  usri3_home_dir			LPWSTR 
+		  usri3_comment				LPWSTR 
+		  usri3_flags				DWORD  
+		  usri3_script_path			LPWSTR 
+		  usri3_auth_flags			DWORD  
+		  usri3_full_name			LPWSTR 
+		  usri3_usr_comment			LPWSTR 
+		  usri3_parms				LPWSTR 
+		  usri3_workstations		LPWSTR 
+		  usri3_last_logon			DWORD  
+		  usri3_last_logoff			DWORD  
+		  usri3_acct_expires		DWORD  
+		  usri3_max_storage			DWORD  
+		  usri3_units_per_week		DWORD  
+		  usri3_logon_hours			*BYTE  
+		  usri3_bad_pw_count		DWORD  
+		  usri3_num_logons			DWORD  
+		  usri3_logon_server		LPWSTR 
+		  usri3_country_code		DWORD  
+		  usri3_code_page			DWORD  
+		  usri3_user_id				DWORD  
+		  usri3_primary_group_id	DWORD  
+		  usri3_profile				LPWSTR 
+		  usri3_home_dir_drive		LPWSTR 
+		  usri3_password_expired	DWORD  
+	}
+
+
+	USER_INFO_4 struct {
+		usri4_name				LPWSTR
+		usri4_password			LPWSTR
+		usri4_password_age		DWORD 
+		usri4_priv				DWORD 
+		usri4_home_dir			LPWSTR
+		usri4_comment			LPWSTR
+		usri4_flags				DWORD 
+		usri4_script_path		LPWSTR
+		usri4_auth_flags		DWORD 
+		usri4_full_name			LPWSTR
+		usri4_usr_comment		LPWSTR
+		usri4_parms				LPWSTR
+		usri4_workstations		LPWSTR
+		usri4_last_logon		DWORD 
+		usri4_last_logoff		DWORD 
+		usri4_acct_expires		DWORD 
+		usri4_max_storage		DWORD 
+		usri4_units_per_week	DWORD 
+		usri4_logon_hours		*BYTE 
+		usri4_bad_pw_count		DWORD 
+		usri4_num_logons		DWORD 
+		usri4_logon_server		LPWSTR
+		usri4_country_code		DWORD 
+		usri4_code_page			DWORD 
+		usri4_user_sid			*syscall.SID  
+		usri4_primary_group_id	DWORD 
+		usri4_profile			LPWSTR
+		usri4_home_dir_drive	LPWSTR
+		usri4_password_expired	DWORD 
+	}	
 
 	GROUP_USERS_INFO_0 struct {
 		Grui0_name LPWSTR
@@ -120,3 +191,4 @@ const (
 //NetUserGetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, bufptr *LPBYTE, prefmaxlen DWORD, entriesread LPDWORD, totalentries LPDWORD) (status NET_API_STATUS) = netapi32.NetUserGetGroups
 //NetUserSetGroups(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, num_entries DWORD) (status NET_API_STATUS) = netapi32.NetUserSetGroups
 //NetUserSetInfo(servername LPCWSTR, username LPCWSTR, level DWORD, buf LPBYTE, parm_err LPDWORD) (status NET_API_STATUS) = netapi32.NetUserSetInfo
+//sys NetUserGetInfo(servername *WSTR, username *WSTR, level DWORD, bufptr **BYTE) (status NET_API_STATUS) = netapi32.NetUserGetInfo

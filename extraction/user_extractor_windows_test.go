@@ -22,7 +22,7 @@ func TestProcessLocalAccounts(t *testing.T) {
 
 	for e := users.Front(); e != nil; e = e.Next() {
 		v := e.Value.(Row)
-		t.Log("Name: ", v["username"], " Uuid: ", v["uuid"])
+		t.Log("Name: ", v["username"], " Uuid: ", v["uuid"], "Uid: ", v["uid"], "Comment: ", v["description"])
 	}
 	//for i, v := range users {
 	//	t.Log(i, "Name: ", v["name"], " Uuid: ", v["uuid"])

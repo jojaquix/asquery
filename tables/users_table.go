@@ -2,8 +2,7 @@ package tables
 
 import (
 	"container/list"
-	"io"
-	"strconv"
+	"io"	
 
 	"asquery/extraction"
 
@@ -28,7 +27,8 @@ func (UsersTable) Name() string {
 
 func (UsersTable) Schema() sql.Schema {
 	return sql.Schema{
-		{Name: "uuid", Type: sql.BigInteger, Nullable: true},
+		{Name: "uid", Type: sql.BigInteger, Nullable: false},
+		{Name: "uuid", Type: sql.String, Nullable: false},
 		{Name: "username", Type: sql.String, Nullable: false},
 	}
 }
@@ -94,10 +94,11 @@ func (iter *usersIter) Close() error {
 func userInfoToRow(info extraction.Row) sql.Row {
 
 	//TODO why queries only works with Type.BigInteger <-> int64
-	imajor, _ := strconv.Atoi(string(info["uuid"]))
+
 
 	return sql.NewRow(
-		int64(imajor),
-		string(info["username"]),
+		info["uid"].(int64),
+		info["uuid"].(string),
+		info["username"].(string),
 	)
 }
