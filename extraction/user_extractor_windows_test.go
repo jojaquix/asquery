@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+
+func TestQueryKey(t *testing.T) {
+	assert := assert.New(t)
+	data, err := queryKey(kRegProfilePath)
+	assert.Nil(err)
+	assert.NotNil(data)
+
+}
+
 func TestProcessLocalAccounts(t *testing.T) {
 	assert := assert.New(t)
 

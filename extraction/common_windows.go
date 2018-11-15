@@ -3,17 +3,20 @@
 package extraction
 
 import (
-	"strings"
-	"reflect"
-	"syscall"
-	"unsafe"
 	"fmt"
 	"golang.org/x/sys/windows/registry"
+	"reflect"
+	"strings"
+	"syscall"
+	"unsafe"
 )
-
 
 const (
 	kRegSep = "\\"
+)
+
+//the key numbers must be alone in one const declaration because iota use
+const (
 	HKEY_CLASSES_ROOT = 0x80000000 + iota
 	HKEY_CURRENT_USER
 	HKEY_LOCAL_MACHINE
@@ -22,55 +25,98 @@ const (
 	HKEY_CURRENT_CONFIG
 	HKEY_DYN_DATA
 	HKEY_CURRENT_USER_LOCAL_SETTINGS
-	HKEY_PERFORMANCE_TEXT = 0x80000050
+	HKEY_PERFORMANCE_TEXT    = 0x80000050
 	HKEY_PERFORMANCE_NLSTEXT = 0x80000060
 )
 
-  var kRegistryHives = map[string]int {
-    "HKEY_CLASSES_ROOT": 				HKEY_CLASSES_ROOT,
-    "HKEY_CURRENT_CONFIG":  			HKEY_CURRENT_CONFIG,
-    "HKEY_CURRENT_USER": 				HKEY_CURRENT_USER,
-    "HKEY_CURRENT_USER_LOCAL_SETTINGS": HKEY_CURRENT_USER_LOCAL_SETTINGS,
-    "HKEY_LOCAL_MACHINE": 				HKEY_LOCAL_MACHINE,
-    "HKEY_PERFORMANCE_DATA":			HKEY_PERFORMANCE_DATA,
-    "HKEY_PERFORMANCE_NLSTEXT": 		HKEY_PERFORMANCE_NLSTEXT,
-    "HKEY_PERFORMANCE_TEXT": 			HKEY_PERFORMANCE_TEXT,
-    "HKEY_USERS": 						HKEY_USERS,
+var kRegistryHives = map[string]registry.Key{
+	"HKEY_CLASSES_ROOT":     registry.CLASSES_ROOT,
+	"HKEY_CURRENT_USER":     registry.CURRENT_USER,
+	"HKEY_CURRENT_CONFIG":   registry.CURRENT_CONFIG,
+	"HKEY_LOCAL_MACHINE":    registry.LOCAL_MACHINE,
+	"HKEY_USERS":            registry.USERS,
+	"HKEY_PERFORMANCE_DATA": registry.PERFORMANCE_DATA,
+
+	"HKEY_CURRENT_USER_LOCAL_SETTINGS": registry.Key(HKEY_CURRENT_USER_LOCAL_SETTINGS),
+	"HKEY_PERFORMANCE_NLSTEXT":         registry.Key(HKEY_PERFORMANCE_NLSTEXT),
+	"HKEY_PERFORMANCE_TEXT":            registry.Key(HKEY_PERFORMANCE_TEXT),
 }
 
+var kRegistryHives2 = map[string]string{
+	"HKEY_CLASSES_ROOT":     "registry.Key(HKEY_CLASSES_ROOT)",
+	"HKEY_CURRENT_USER":     "registry.Key(HKEY_CURRENT_USER)",
+	"HKEY_CURRENT_CONFIG":   "registry.Key(HKEY_CURRENT_CONFIG)",
+	"HKEY_LOCAL_MACHINE":    "registry.Key(HKEY_LOCAL_MACHINE)",
+	"HKEY_USERS":            "registry.Key(HKEY_USERS)",
+	"HKEY_PERFORMANCE_DATA": "registry.Key(HKEY_PERFORMANCE_DATA)",
 
-func explodeRegistryPath( path string) (rHive, rKey string) {
-	toks := strings.Split(path, kRegSep);
-	rHive = toks[0];
+	"HKEY_CURRENT_USER_LOCAL_SETTINGS": "registry.Key(HKEY_CURRENT_USER_LOCAL_SETTINGS)",
+	"HKEY_PERFORMANCE_NLSTEXT":         "registry.Key(HKEY_PERFORMANCE_NLSTEXT)",
+	"HKEY_PERFORMANCE_TEXT":            "registry.Key(HKEY_PERFORMANCE_TEXT)",
+}
+
+var kRegistryStringTypes = [...]int{
+	syscall.REG_SZ, syscall.REG_MULTI_SZ, syscall.REG_EXPAND_SZ,
+}
+
+var kRegistryTypes = map[int]string{
+	syscall.REG_BINARY:                   "REG_BINARY",
+	syscall.REG_DWORD:                    "REG_DWORD",
+	syscall.REG_DWORD_BIG_ENDIAN:         "REG_DWORD_BIG_ENDIAN",
+	syscall.REG_EXPAND_SZ:                "REG_EXPAND_SZ",
+	syscall.REG_LINK:                     "REG_LINK",
+	syscall.REG_MULTI_SZ:                 "REG_MULTI_SZ",
+	syscall.REG_NONE:                     "REG_NONE",
+	syscall.REG_QWORD:                    "REG_QWORD",
+	syscall.REG_SZ:                       "REG_SZ",
+	syscall.REG_FULL_RESOURCE_DESCRIPTOR: "REG_FULL_RESOURCE_DESCRIPTOR",
+	syscall.REG_RESOURCE_LIST:            "REG_RESOURCE_LIST",
+}
+
+var kClassKeys = [...]string{
+	"HKEY_USERS\\%\\SOFTWARE\\Classes\\CLSID",
+	"HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID",
+}
+
+var kClassExecSubKeys = [...]string{
+	"InProcServer%", "InProcHandler%", "LocalServer%",
+}
+
+func explodeRegistryPath(path string) (rHive, rKey string) {
+	toks := strings.Split(path, kRegSep)
+	rHive = toks[0]
 	toks = append(toks[1:])
 	rKey = strings.Join(toks, kRegSep)
-	return rHive,rKey
+	return rHive, rKey
 }
 
 func queryKey(keyPath string) (Data, error) {
 	var data Data
 	hive, key := explodeRegistryPath(keyPath)
 
-	val, ok := kRegistryHives[hive]
+	base, ok := kRegistryHives[hive]
 	if !ok {
 		return data, fmt.Errorf("Key not exists in Hives")
 	}
-	
-	relkey  := registry.Key(val)
 
-	hkey, err := registry.OpenKey(relkey, key, syscall.KEY_READ)
+	base = base
+
+	hkey, err := registry.OpenKey(base, key, syscall.KEY_READ)
 	if err != nil {
-		return data, err
+		return nil, err
 	}
 
 	hkey = hkey
 
+	subKeyNames, err := hkey.ReadSubKeyNames(255)
+	if err != nil {
+		return nil, err
+	}
 
+	subKeyNames = subKeyNames
 
-	return nil,nil
+	return data, nil
 }
-
-
 
 func StringFromLPWSTR(source LPWSTR, size int) string {
 	p := uintptr(unsafe.Pointer(source))
@@ -114,6 +160,3 @@ func CreateUserInfo4SlideFromLPBYTE(source *BYTE, size int) []USER_INFO_4 {
 	uish.Cap = size
 	return userInfoSlide
 }
-
-
-

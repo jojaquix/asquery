@@ -37,33 +37,6 @@ var kWellKnownSids = [...]string {
     "S-1-5-32",
 }
 
-//var kRegistryStringTypes = [...] int{
-//	REG_SZ, REG_MULTI_SZ, REG_EXPAND_SZ,
-//	}
-//
-
-
-//const std::map<DWORD, std::string> kRegistryTypes = {
-//    {REG_BINARY, "REG_BINARY"},
-//    {REG_DWORD, "REG_DWORD"},
-//    {REG_DWORD_BIG_ENDIAN, "REG_DWORD_BIG_ENDIAN"},
-//    {REG_EXPAND_SZ, "REG_EXPAND_SZ"},
-//    {REG_LINK, "REG_LINK"},
-//    {REG_MULTI_SZ, "REG_MULTI_SZ"},
-//    {REG_NONE, "REG_NONE"},
-//    {REG_QWORD, "REG_QWORD"},
-//    {REG_SZ, "REG_SZ"},
-//    {REG_FULL_RESOURCE_DESCRIPTOR, "REG_FULL_RESOURCE_DESCRIPTOR"},
-//    {REG_RESOURCE_LIST, "REG_RESOURCE_LIST"},
-//};
-//
-//const std::vector<std::string> kClassKeys = {
-//    "HKEY_USERS\\%\\SOFTWARE\\Classes\\CLSID",
-//    "HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\CLSID"};
-//
-//const std::vector<std::string> kClassExecSubKeys = {
-//    "InProcServer%", "InProcHandler%", "LocalServer%"};
-//
 
 
 func getUserHomeDir (sid string) string {
