@@ -3,6 +3,7 @@
 package extraction
 
 import (
+	"container/list"
 	"fmt"
 	"golang.org/x/sys/windows/registry"
 	"reflect"
@@ -12,7 +13,12 @@ import (
 )
 
 const (
-	kRegSep = "\\"
+	kRegSep         = "\\"
+	kDefaultRegName = "(Default)"
+)
+
+const (
+	kRegMaxRecursiveDepth = 32
 )
 
 //the key numbers must be alone in one const declaration because iota use
@@ -90,32 +96,118 @@ func explodeRegistryPath(path string) (rHive, rKey string) {
 	return rHive, rKey
 }
 
-func queryKey(keyPath string) (Data, error) {
-	var data Data
+func queryKey(keyPath string) (*list.List, error) {
+	var dataQuery *list.List
 	hive, key := explodeRegistryPath(keyPath)
 
 	base, ok := kRegistryHives[hive]
 	if !ok {
-		return data, fmt.Errorf("Key not exists in Hives")
+		return nil, fmt.Errorf("Key not exists in Hives")
 	}
-
-	base = base
 
 	hkey, err := registry.OpenKey(base, key, syscall.KEY_READ)
 	if err != nil {
 		return nil, err
 	}
 
-	hkey = hkey
-
-	subKeyNames, err := hkey.ReadSubKeyNames(255)
+	subKeyNames, err := hkey.ReadSubKeyNames(-1)
 	if err != nil {
 		return nil, err
 	}
 
-	subKeyNames = subKeyNames
+	dataQuery = list.New()
 
-	return data, nil
+	if len(subKeyNames) > 0 {
+		for i := 0; i < len(subKeyNames); i++ {
+			subKey, err := registry.OpenKey(hkey, subKeyNames[i], syscall.KEY_READ)
+			if err != nil {
+				return nil, err
+			}
+			subKeyInfo, err := subKey.Stat()
+
+			var r Row
+			r = make(Row)
+			r["key"] = keyPath
+			r["type"] = "subkey"
+			r["name"] = subKeyNames[i]
+			r["path"] = keyPath + kRegSep + subKeyNames[i]
+			r["mtime"] = subKeyInfo.ModTime()
+
+			subKey.Close()
+
+			dataQuery.PushBack(r)
+
+		}
+	}
+
+	keyInfo, err := hkey.Stat()
+
+	if keyInfo.ValueCount <= 0 {
+		return dataQuery, nil
+	}
+
+	valueNames, err := hkey.ReadValueNames(-1)
+
+	var buf []byte
+	buf = make([]byte, keyInfo.MaxValueLen)
+
+	for i := 0; i < len(valueNames); i++ {
+		buf[0] = 0
+		_, valtype, err := hkey.GetValue(valueNames[i], nil)
+
+		if err != nil {
+			return nil, err
+		}
+
+		var r Row
+		r = make(Row)
+		r["key"] = keyPath
+		r["name"] = valueNames[i]
+		r["path"] = keyPath + kRegSep + valueNames[i]
+		r["mtime"] = ""
+
+		valueTypeStr, ok := kRegistryTypes[int(valtype)]
+
+		if !ok {
+			r["type"] = "UNKNOWN"
+		} else {
+			r["type"] = valueTypeStr
+		}
+
+		switch valtype {
+		//TODO other register values as osquery does
+		case registry.LINK:
+
+		case registry.EXPAND_SZ, registry.SZ:
+			strValue, _, err := hkey.GetStringValue(valueNames[i])
+			if err != nil {
+				return nil, err
+			}
+			r["data"] = strValue
+
+		case registry.DWORD, registry.QWORD:
+			intValue, _, err := hkey.GetIntegerValue(valueNames[i])
+			if err != nil {
+				return nil, err
+			}
+			r["data"] = string(intValue)
+
+		case registry.BINARY:
+			binValue, _, err := hkey.GetBinaryValue(valueNames[i])
+			if err != nil {
+				return nil, err
+			}
+			r["data"] = string(binValue)
+
+		default:
+			r["data"] = ""
+		}
+
+		dataQuery.PushBack(r)
+
+	}
+
+	return dataQuery, nil
 }
 
 func StringFromLPWSTR(source LPWSTR, size int) string {

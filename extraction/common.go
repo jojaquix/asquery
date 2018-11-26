@@ -18,7 +18,7 @@ type InfoIterable interface {
 	Close()
 }
 
-//this create on slide from existing memeory layout
+//this create on slide from existing memory layout
 func createSlide(unsafePtr unsafe.Pointer, slideProto interface{}, size int) reflect.Value {
 
 	slideType := reflect.SliceOf(reflect.TypeOf(slideProto))
