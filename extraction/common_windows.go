@@ -175,7 +175,7 @@ func queryKey(keyPath string) (*list.List, error) {
 		}
 
 		switch valtype {
-		//TODO other register values as osquery does
+		//TODO other register values types as osquery does
 		case registry.LINK:
 
 		case registry.EXPAND_SZ, registry.SZ:
@@ -184,6 +184,31 @@ func queryKey(keyPath string) (*list.List, error) {
 				return nil, err
 			}
 			r["data"] = strValue
+
+		case registry.MULTI_SZ:
+			bytes, _, err := hkey.GetValue(valueNames[i], buf)
+			if err != nil {
+				return nil, err
+			}
+			//TODO this is to naive check latter
+			str := string(buf[0:bytes])
+			r["data"] = str
+
+			//			multiSzStrs := []string{}
+			//			str := ""
+			//			last_was_null:= false
+			//			for i := 0; i< bytes; i++ {
+			//
+			//				if buf[i] != 0x00 {
+			//					str = str + string(buf[i])
+			//					last_was_null= false
+			//				} else if last_was_null {
+			//					multiSzStrs= append(multiSzStrs, str)
+			//					str = ""
+			//					last_was_null= true
+			//				}
+			//			}
+			//			r["data"] = strings.Join(multiSzStrs,",")
 
 		case registry.DWORD, registry.QWORD:
 			intValue, _, err := hkey.GetIntegerValue(valueNames[i])
@@ -198,6 +223,9 @@ func queryKey(keyPath string) (*list.List, error) {
 				return nil, err
 			}
 			r["data"] = string(binValue)
+
+		case registry.NONE:
+			r["data"] = "(zero-length binary value)"
 
 		default:
 			r["data"] = ""
