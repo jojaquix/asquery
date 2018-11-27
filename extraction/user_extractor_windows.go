@@ -4,6 +4,7 @@ package extraction
 
 import (
 	"container/list"
+	"golang.org/x/sys/windows"
 	"unsafe"
 	//"syscall"
 	//"golang.org/x/text/encoding/unicode"
@@ -35,7 +36,16 @@ var kWellKnownSids = [...]string{
 	"S-1-5-32",
 }
 
-func findSid(sid string) bool {
+func findSid(sid string, where []string) bool {
+	for _, v := range where {
+		if v == sid {
+			return true
+		}
+	}
+	return false
+}
+
+func findSidInWellKnwon(sid string) bool {
 	for _, v := range kWellKnownSids {
 		if v == sid {
 			return true
@@ -67,7 +77,7 @@ func GetUsers() (list.List, error) {
 	var results list.List
 	processedSids := make([]string, 0)
 	processLocalAccounts2(processedSids, &results)
-
+	processRoamingAccounts(processedSids, &results)
 	return results, nil
 }
 
@@ -164,10 +174,63 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 
 func processRoamingAccounts(processedSids []string, results *list.List) {
 
-	//	if !findSid(sidString) {
-	//		r["type"] = "roaming"
-	//	} else {
-	//		r["type"] = "special"
-	//	}
-	//
+	keyResult, err := queryKey(kRegProfilePath)
+	if err != nil {
+		return
+	}
+
+	for k := keyResult.Front(); k != nil; k = k.Next() {
+		row := k.Value.(Row)
+		if row["type"].(string) != "subKey" {
+			continue
+		}
+
+		sidString := row["name"].(string)
+		if findSid(sidString, processedSids) {
+			continue
+		}
+
+		r := Row{}
+
+		r["uuid"] = sidString
+		r["directory"] = getUserHomeDir(sidString)
+
+		sid, err := windows.StringToSid(sidString)
+		if err != nil {
+			return
+		}
+
+		account, domain, accType, err := sid.LookupAccount("")
+		if err != nil {
+			return
+		}
+
+		account = account
+		domain = domain
+		accType = accType
+
+		//	var userInfoLevel DWORD = 3
+		//	var userBuff *BYTE
+		//	ret = NetUserGetInfo(nil,
+		//		(*WSTR)(),
+		//		userInfoLevel,
+		//		&userBuff)
+		//
+
+		if !findSidInWellKnwon(sidString) {
+			r["type"] = "roaming"
+		} else {
+			r["type"] = "special"
+		}
+
+		//TODO
+		r["shell"] = "C:\\Windows\\System32\\cmd.exe"
+		r["description"] = ""
+
+		r["username"] = account
+
+		results.PushBack(r)
+
+	}
+
 }

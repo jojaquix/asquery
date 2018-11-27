@@ -128,7 +128,7 @@ func queryKey(keyPath string) (*list.List, error) {
 			var r Row
 			r = make(Row)
 			r["key"] = keyPath
-			r["type"] = "subkey"
+			r["type"] = "subKey"
 			r["name"] = subKeyNames[i]
 			r["path"] = keyPath + kRegSep + subKeyNames[i]
 			r["mtime"] = subKeyInfo.ModTime()
@@ -186,12 +186,12 @@ func queryKey(keyPath string) (*list.List, error) {
 			r["data"] = strValue
 
 		case registry.MULTI_SZ:
-			bytes, _, err := hkey.GetValue(valueNames[i], buf)
+			_, _, err := hkey.GetValue(valueNames[i], buf)
 			if err != nil {
 				return nil, err
 			}
 			//TODO this is to naive check latter
-			str := string(buf[0:bytes])
+			str := string(buf)
 			r["data"] = str
 
 			//			multiSzStrs := []string{}
