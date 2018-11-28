@@ -80,8 +80,8 @@ func getUserHomeDir(sid string) string {
 func GetUsers() (list.List, error) {
 	var results list.List
 	processedSids := make([]string, 0)
-	processLocalAccounts2(processedSids, &results)
-	processRoamingAccounts(processedSids, &results)
+	processLocalAccounts2(&processedSids, &results)
+	processRoamingAccounts(&processedSids, &results)
 	return results, nil
 }
 
@@ -170,7 +170,7 @@ func processLocalAccounts(processedSids []string, results *list.List) {
 
 }
 
-func processLocalAccounts2(processedSids []string, results *list.List) {
+func processLocalAccounts2(processedSids *[]string, results *list.List) {
 
 	const MAX_PREFERRED_LENGTH = ^DWORD(0)
 
@@ -221,7 +221,7 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 					sidString = ""
 				}
 
-				processedSids = append(processedSids, sidString)
+				*processedSids = append(*processedSids, sidString)
 
 				r := Row{}
 				r["uuid"] = sidString
@@ -253,7 +253,7 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 
 }
 
-func processRoamingAccounts(processedSids []string, results *list.List) {
+func processRoamingAccounts(processedSids *[]string, results *list.List) {
 
 	keyResult, err := queryKey(kRegProfilePath)
 	if err != nil {
@@ -267,7 +267,7 @@ func processRoamingAccounts(processedSids []string, results *list.List) {
 		}
 
 		sidString := row["name"].(string)
-		if findSid(sidString, processedSids) {
+		if findSid(sidString, *processedSids) {
 			continue
 		}
 
