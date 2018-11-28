@@ -17,7 +17,7 @@ import (
 
 func GetUsers() list.List {
 	results := list.New()
-	processedSids := make([]string, 0)
+	processedSids := make([]string, 0, 10)
 	processLocalAccounts2(&processedSids, results)
 	processRoamingAccounts(&processedSids, results)
 	return *results

@@ -12,9 +12,10 @@ import (
 
 func GetPrograms() list.List {
 	results := list.New()
-	processed := make([]string, 20)
+	processed := make([]string, 0, 20)
 
 	generateDummie(&processed, results)
+	genPrograms(&processed, results)
 	return *results
 }
 
@@ -24,6 +25,23 @@ var kProgramKeys = [...]string{
 }
 
 func genPrograms(processed *[]string, results *list.List) {
+
+	programKeys := make([]string, 2)
+
+	for _, v := range kProgramKeys {
+		programKeys = append(programKeys, v)
+	}
+
+	userProgramKeys := make([]string, 0, 10)
+	userProgramKeys = expandRegistryGlobs("HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall", userProgramKeys)
+
+	for _, v := range userProgramKeys {
+		programKeys = append(programKeys, v)
+	}
+
+	for _, v := range programKeys {
+		keyEnumPrograms(v, processed, results)
+	}
 
 }
 
@@ -39,7 +57,7 @@ func keyEnumPrograms(key string, processed *[]string, results *list.List) {
 
 	keyResults, err := queryKey(key)
 	if err != nil {
-		//TODO logg
+		//TODO log
 		return
 	}
 
@@ -55,10 +73,17 @@ func keyEnumPrograms(key string, processed *[]string, results *list.List) {
 		}
 
 		*processed = append(*processed, fullProgramName)
+		appResults, _ := queryKey(key)
+
+		for aKey := appResults.Front(); aKey != nil; aKey = aKey.Next() {
+			aRow := aKey.Value.(Row)
+			aRow = aRow
+
+		}
 
 		r := Row{}
-
 		r["name"] = fullProgramName
+		r["version"] = "comming soon"
 		results.PushBack(r)
 
 	}

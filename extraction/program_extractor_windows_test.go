@@ -7,6 +7,20 @@ import (
 	"testing"
 )
 
+func TestExpandRegistryGlobs(t *testing.T) {
+	assert := assert.New(t)
+
+	userProgramKeys := make([]string, 0, 10)
+	userProgramKeys = expandRegistryGlobs("HKEY_USERS\\%\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
+		userProgramKeys)
+	assert.NotEqual(0, len(userProgramKeys))
+
+	for _, v := range userProgramKeys {
+		t.Log(v)
+	}
+
+}
+
 func TestPrograms(t *testing.T) {
 	assert := assert.New(t)
 

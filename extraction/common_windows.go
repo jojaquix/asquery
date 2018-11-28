@@ -123,6 +123,7 @@ func queryKey(keyPath string) (*list.List, error) {
 		for i := 0; i < len(subKeyNames); i++ {
 			subKey, err := registry.OpenKey(hkey, subKeyNames[i], syscall.KEY_READ)
 			if err != nil {
+				//continue
 				return nil, err
 			}
 			subKeyInfo, err := subKey.Stat()
@@ -322,6 +323,124 @@ func utf16FromString(str string) []uint16 {
 	}
 }
 
-func expandRegistryGlobs() {
-	return
+func populateDefaultKeys(rKeys []string) []string {
+
+	for k, _ := range kRegistryHives {
+		rKeys = append(rKeys, k)
+	}
+	return rKeys
+}
+
+func populateSubKeys(rKeys []string, replaceKeys bool) ([]string, error) {
+
+	var newKeys []string
+
+	if !replaceKeys {
+		newKeys = make([]string, len(rKeys))
+		copy(newKeys, rKeys)
+	}
+
+	for _, key := range rKeys {
+		regResults, err := queryKey(key)
+		if err == nil {
+			for e := regResults.Front(); e != nil; e = e.Next() {
+				r := e.Value.(Row)
+				if r["type"].(string) == "subKey" {
+					newKeys = append(newKeys, r["path"].(string))
+				}
+			}
+		} else {
+			return rKeys, err
+		}
+	}
+
+	rKeys = newKeys
+	return rKeys, nil
+}
+
+func populateAllKeysRecursive(rKeys []string, currDepth int, maxDepth int) ([]string, error) {
+	if currDepth > kRegMaxRecursiveDepth {
+		//TODO log
+		return rKeys, fmt.Errorf("Max recursive depth reached")
+	}
+
+	size_pre := len(rKeys)
+	rKeys, err := populateSubKeys(rKeys, false)
+	if err != nil {
+		return rKeys, err
+	}
+
+	if size_pre < len(rKeys) {
+		currDepth++
+		rKeys, err := populateAllKeysRecursive(rKeys, currDepth, kRegMaxRecursiveDepth)
+		if err != nil {
+			return rKeys, err
+		}
+	}
+
+	return rKeys, nil
+
+}
+
+func appendSubKeysToKey(subkey string, rKeys []string) []string {
+
+	newKeys := make([]string, 0, 10)
+	for _, v := range rKeys {
+		newKeys = append(newKeys, v+kRegSep+subkey)
+	}
+
+	rKeys = newKeys
+	return rKeys
+
+}
+
+func expandRegistryGlobs(pattern string, results []string) []string {
+	pathElems := strings.Split(pattern, kRegSep)
+
+	if len(pathElems) == 0 {
+		return results
+	}
+
+	/*
+	 * Pattern is '%%', grab everything.
+	 * Note that if '%%' is present but not at the end of the pattern,
+	 * then it is treated like a single glob.
+	 */
+
+	if strings.HasSuffix(pathElems[0], "%%") && len(pathElems) == 1 {
+		results = populateDefaultKeys(results)
+		results, _ = populateAllKeysRecursive(results, 1, kRegMaxRecursiveDepth)
+		return results
+	}
+
+	// Special handling to insert default keys when glob present in first elem
+
+	if strings.Contains(pathElems[0], "%") {
+		results = populateDefaultKeys(results)
+		pathElems = pathElems[1:]
+	} else {
+		results = append(results, pathElems[0])
+		pathElems = pathElems[1:]
+	}
+
+	for _, v := range pathElems {
+		// We only care about  a recursive glob if it comes at the end of the
+		// pattern i.e. 'HKEY_LOCAL_MACHINE\SOFTWARE\%%'
+		if strings.HasSuffix(v, "%") && v == pathElems[len(pathElems)-1] {
+			results, _ = populateAllKeysRecursive(results, 1, kRegMaxRecursiveDepth)
+			return results
+		} else if strings.Contains(v, "%") {
+			var err error
+			results, err = populateSubKeys(results, true)
+			if err != nil {
+				return results
+			}
+		} else {
+			results = appendSubKeysToKey(v, results)
+		}
+
+	}
+
+	return results
+
 }
