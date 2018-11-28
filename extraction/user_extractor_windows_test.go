@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-
 func TestQueryKey(t *testing.T) {
 	assert := assert.New(t)
 	data, err := queryKey(kRegProfilePath)
@@ -31,7 +30,7 @@ func TestProcessLocalAccounts(t *testing.T) {
 
 	for e := users.Front(); e != nil; e = e.Next() {
 		v := e.Value.(Row)
-		t.Log( v["username"],  v["uuid"], v["uid"], v["description"], v["directory"])
+		t.Log(v["username"], v["uuid"], v["uid"], v["gid"], v["description"], v["directory"])
 	}
 	//for i, v := range users {
 	//	t.Log(i, "Name: ", v["name"], " Uuid: ", v["uuid"])

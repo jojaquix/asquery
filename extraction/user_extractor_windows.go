@@ -5,6 +5,9 @@ package extraction
 import (
 	"container/list"
 	"golang.org/x/sys/windows"
+	"reflect"
+	"strconv"
+	"strings"
 	"unsafe"
 	//"syscall"
 	//"golang.org/x/text/encoding/unicode"
@@ -13,7 +16,8 @@ import (
 )
 
 const (
-	kRegProfilePath = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList"
+	kRegProfilePath   = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList"
+	NERR_UserNotFound = 2221
 )
 
 var kWellKnownSids = [...]string{
@@ -81,9 +85,81 @@ func GetUsers() (list.List, error) {
 	return results, nil
 }
 
-//std::string psidToString(PSID sid);
-//int getUidFromSid(PSID sid);
-//int getGidFromSid(PSID sid);
+func getUidFromSid(sid *windows.SID) int64 {
+	var userInfoLevel DWORD = 3
+	var userBuffer *BYTE
+	var uid int64 = -1
+	account, _, _, err := sid.LookupAccount("")
+	if err != nil {
+		return 0
+	}
+
+	accountUtf16Slide := utf16FromString(account)
+	accountUtf16SlideHeader := (*reflect.SliceHeader)(unsafe.Pointer(&accountUtf16Slide))
+	ret := NetUserGetInfo(nil,
+		(*WSTR)((unsafe.Pointer(accountUtf16SlideHeader.Data))),
+		userInfoLevel,
+		&userBuffer)
+
+	if ret == NERR_UserNotFound {
+		sidStr, err := sid.String()
+		if err == nil {
+			toks := strings.Split(sidStr, "-")
+			toks = toks
+			value, err := strconv.ParseInt(toks[len(toks)-1], 10, 64)
+			if err == nil {
+				return value
+			}
+		}
+	} else if ret == NERR_Success {
+		userInfo3Slide := CreateUserInfo3SlideFromLPBYTE(userBuffer, 1)
+		uid = int64(userInfo3Slide[0].usri3_user_id)
+	}
+
+	if ret == NERR_Success && userBuffer != nil {
+		NetApiBufferFree((LPVOID)(unsafe.Pointer(userBuffer)))
+	}
+
+	return uid
+}
+
+func getGidFromSid(sid *windows.SID) int64 {
+	var userInfoLevel DWORD = 3
+	var userBuffer *BYTE
+	var gid int64 = -1
+	account, _, _, err := sid.LookupAccount("")
+	if err != nil {
+		return 0
+	}
+
+	accountUtf16Slide := utf16FromString(account)
+	accountUtf16SlideHeader := (*reflect.SliceHeader)(unsafe.Pointer(&accountUtf16Slide))
+	ret := NetUserGetInfo(nil,
+		(*WSTR)((unsafe.Pointer(accountUtf16SlideHeader.Data))),
+		userInfoLevel,
+		&userBuffer)
+
+	if ret == NERR_UserNotFound {
+		sidStr, err := sid.String()
+		if err == nil {
+			toks := strings.Split(sidStr, "-")
+			toks = toks
+			value, err := strconv.ParseInt(toks[len(toks)-1], 10, 64)
+			if err == nil {
+				return value
+			}
+		}
+	} else if ret == NERR_Success {
+		userInfo3Slide := CreateUserInfo3SlideFromLPBYTE(userBuffer, 1)
+		gid = int64(userInfo3Slide[0].usri3_primary_group_id)
+	}
+
+	if ret == NERR_Success && userBuffer != nil {
+		NetApiBufferFree((LPVOID)(unsafe.Pointer(userBuffer)))
+	}
+
+	return gid
+}
 
 func processLocalAccounts(processedSids []string, results *list.List) {
 
@@ -117,7 +193,6 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 
 		if (ret == NERR_Success || ret == ERROR_MORE_DATA) && userBuffer != nil {
 
-			defer NetApiBufferFree((LPVOID)(unsafe.Pointer(userBuffer)))
 			userInfoSlide := CreateUserInfo3SlideFromLPBYTE(userBuffer, int(dwNumUsersRead))
 
 			for _, userInfo := range userInfoSlide {
@@ -160,9 +235,15 @@ func processLocalAccounts2(processedSids []string, results *list.List) {
 				r["shell"] = "C:\\Windows\\System32\\cmd.exe"
 				r["type"] = "local"
 
+				if userLvl4Buff != nil {
+					NetApiBufferFree((LPVOID)(unsafe.Pointer(userLvl4Buff)))
+				}
+
 				results.PushBack(r)
 			}
-
+			if userBuffer != nil {
+				NetApiBufferFree((LPVOID)(unsafe.Pointer(userBuffer)))
+			}
 		}
 
 		if ret != ERROR_MORE_DATA {
@@ -200,22 +281,10 @@ func processRoamingAccounts(processedSids []string, results *list.List) {
 			return
 		}
 
-		account, domain, accType, err := sid.LookupAccount("")
-		if err != nil {
-			return
-		}
-
-		account = account
-		domain = domain
-		accType = accType
-
-		//	var userInfoLevel DWORD = 3
-		//	var userBuff *BYTE
-		//	ret = NetUserGetInfo(nil,
-		//		(*WSTR)(),
-		//		userInfoLevel,
-		//		&userBuff)
-		//
+		r["uid"] = getUidFromSid(sid)
+		r["gid"] = getGidFromSid(sid)
+		r["uid_signed"] = r["uid"]
+		r["gid_signed"] = r["gid"]
 
 		if !findSidInWellKnwon(sidString) {
 			r["type"] = "roaming"
@@ -227,10 +296,14 @@ func processRoamingAccounts(processedSids []string, results *list.List) {
 		r["shell"] = "C:\\Windows\\System32\\cmd.exe"
 		r["description"] = ""
 
-		r["username"] = account
+		account, _, _, err := sid.LookupAccount("")
+		if err != nil {
+			r["username"] = ""
+		} else {
+			r["username"] = account
+		}
 
 		results.PushBack(r)
-
 	}
 
 }

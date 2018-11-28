@@ -4,11 +4,13 @@ package extraction
 
 import (
 	"container/list"
+	"encoding/binary"
 	"fmt"
 	"golang.org/x/sys/windows/registry"
 	"reflect"
 	"strings"
 	"syscall"
+	"unicode/utf16"
 	"unsafe"
 )
 
@@ -279,4 +281,42 @@ func CreateUserInfo4SlideFromLPBYTE(source *BYTE, size int) []USER_INFO_4 {
 	uish.Len = size
 	uish.Cap = size
 	return userInfoSlide
+}
+
+// uf16PtrToString creates a Go string from a pointer to a UTF16 encoded zero-terminated string.
+// Such pointers are returned from the Windows API calls.
+// The function creates a copy of the string.
+func utf16PtrToString(wstr *uint16) string {
+	if wstr != nil {
+		for len := 0; ; len++ {
+			ptr := unsafe.Pointer(uintptr(unsafe.Pointer(wstr)) + uintptr(len)*unsafe.Sizeof(*wstr)) // see https://golang.org/pkg/unsafe/#Pointer (3)
+			if *(*uint16)(ptr) == 0 {
+				return string(utf16.Decode(*(*[]uint16)(unsafe.Pointer(&reflect.SliceHeader{
+					Data: uintptr(unsafe.Pointer(wstr)),
+					Len:  len,
+					Cap:  len,
+				}))))
+			}
+		}
+	}
+	return ""
+}
+
+// utf16ToByte creates a byte array from a given UTF 16 char array.
+func utf16ToByte(wstr []uint16) (result []byte) {
+	result = make([]byte, len(wstr)*2)
+	for i := range wstr {
+		binary.LittleEndian.PutUint16(result[(i*2):(i*2)+2], wstr[i])
+	}
+	return
+}
+
+// utf16FromString creates a UTF16 char array from a string.
+func utf16FromString(str string) []uint16 {
+	out, err := syscall.UTF16FromString(str)
+	if err != nil {
+		return make([]uint16, 0)
+	} else {
+		return out
+	}
 }
