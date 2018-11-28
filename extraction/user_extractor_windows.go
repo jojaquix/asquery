@@ -15,6 +15,14 @@ import (
 	//"golang.org/x/sys/windows/registry"
 )
 
+func GetUsers() list.List {
+	results := list.New()
+	processedSids := make([]string, 0)
+	processLocalAccounts2(&processedSids, results)
+	processRoamingAccounts(&processedSids, results)
+	return *results
+}
+
 const (
 	kRegProfilePath   = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList"
 	NERR_UserNotFound = 2221
@@ -68,7 +76,7 @@ func getUserHomeDir(sid string) string {
 	for k := keyResult.Front(); k != nil; k = k.Next() {
 
 		row := k.Value.(Row)
-		if row["name"] == "ProfileImagePath" {
+		if row["name"].(string) == "ProfileImagePath" {
 			return string(row["data"].(string))
 		}
 	}
@@ -77,21 +85,13 @@ func getUserHomeDir(sid string) string {
 
 }
 
-func GetUsers() (list.List, error) {
-	var results list.List
-	processedSids := make([]string, 0)
-	processLocalAccounts2(&processedSids, &results)
-	processRoamingAccounts(&processedSids, &results)
-	return results, nil
-}
-
 func getUidFromSid(sid *windows.SID) int64 {
 	var userInfoLevel DWORD = 3
 	var userBuffer *BYTE
 	var uid int64 = -1
 	account, _, _, err := sid.LookupAccount("")
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	accountUtf16Slide := utf16FromString(account)
@@ -129,7 +129,7 @@ func getGidFromSid(sid *windows.SID) int64 {
 	var gid int64 = -1
 	account, _, _, err := sid.LookupAccount("")
 	if err != nil {
-		return 0
+		return -1
 	}
 
 	accountUtf16Slide := utf16FromString(account)

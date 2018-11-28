@@ -2,7 +2,7 @@ package tables
 
 import (
 	"container/list"
-	"io"	
+	"io"
 
 	"asquery/extraction"
 
@@ -28,8 +28,15 @@ func (UsersTable) Name() string {
 func (UsersTable) Schema() sql.Schema {
 	return sql.Schema{
 		{Name: "uid", Type: sql.BigInteger, Nullable: false},
+		{Name: "gid", Type: sql.BigInteger, Nullable: false},
+		{Name: "uid_signed", Type: sql.BigInteger, Nullable: false},
+		{Name: "gid_signed", Type: sql.BigInteger, Nullable: false},
+		{Name: "username", Type: sql.String, Nullable: true},
+		{Name: "description", Type: sql.String, Nullable: true},
+		{Name: "directory", Type: sql.String, Nullable: true},
+		{Name: "shell", Type: sql.String, Nullable: true},
 		{Name: "uuid", Type: sql.String, Nullable: false},
-		{Name: "username", Type: sql.String, Nullable: false},
+		{Name: "type", Type: sql.String, Nullable: false},
 	}
 }
 
@@ -62,16 +69,9 @@ func (iter *usersIter) Next() (sql.Row, error) {
 	//test return just thow users
 	//change to actual extractor call
 	if iter.rowPtr == nil && !iter.fetched {
-		var err error
-		iter.info, err = extraction.GetUsers()
-		if err == nil {
-			iter.rowPtr = iter.info.Front()
-			iter.fetched = true
-		}
-		//else {
-		//	//TODO logging
-		//}
-
+		iter.info = extraction.GetUsers()
+		iter.rowPtr = iter.info.Front()
+		iter.fetched = true
 	}
 
 	if iter.rowPtr != nil {
@@ -95,10 +95,16 @@ func userInfoToRow(info extraction.Row) sql.Row {
 
 	//TODO why queries only works with Type.BigInteger <-> int64
 
-
 	return sql.NewRow(
 		info["uid"].(int64),
-		info["uuid"].(string),
+		info["gid"].(int64),
+		info["uid_signed"].(int64),
+		info["gid_signed"].(int64),
 		info["username"].(string),
+		info["description"].(string),
+		info["directory"].(string),
+		info["shell"].(string),
+		info["uuid"].(string),
+		info["type"].(string),
 	)
 }

@@ -1,7 +1,6 @@
 package extraction
 
 import (
-	"container/list"
 	"reflect"
 	"unsafe"
 )
@@ -9,7 +8,6 @@ import (
 type Data interface{}
 type Row map[string]Data
 type ColumnNames []string
-type QueryData list.List
 
 //InfoIterable ... is a generic closable interface for iterating over Infos
 type InfoIterable interface {
@@ -28,5 +26,13 @@ func createSlide(unsafePtr unsafe.Pointer, slideProto interface{}, size int) ref
 	sh.Len = size
 	sh.Cap = size
 	return slide
+}
 
+func Contains(a []string, x string) bool {
+	for _, n := range a {
+		if x == n {
+			return true
+		}
+	}
+	return false
 }

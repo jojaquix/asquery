@@ -179,6 +179,7 @@ func queryKey(keyPath string) (*list.List, error) {
 		switch valtype {
 		//TODO other register values types as osquery does
 		case registry.LINK:
+			r["data"] = "No Implemented yet :("
 
 		case registry.EXPAND_SZ, registry.SZ:
 			strValue, _, err := hkey.GetStringValue(valueNames[i])
@@ -319,4 +320,8 @@ func utf16FromString(str string) []uint16 {
 	} else {
 		return out
 	}
+}
+
+func expandRegistryGlobs() {
+	return
 }

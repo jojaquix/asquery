@@ -15,14 +15,10 @@ func TestQueryKey(t *testing.T) {
 
 }
 
-func TestProcessLocalAccounts(t *testing.T) {
+func TestAccounts(t *testing.T) {
 	assert := assert.New(t)
 
-	users, err := GetUsers()
-
-	if err != nil {
-		t.Fatal(err)
-	}
+	users := GetUsers()
 
 	assert.NotEqual(0, users.Len())
 
