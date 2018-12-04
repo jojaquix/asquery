@@ -4,6 +4,7 @@ package extraction
 
 import (
 	"container/list"
+	"regexp"
 	//"syscall"
 	//"golang.org/x/text/encoding/unicode"
 	//"golang.org/x/sys/windows"
@@ -73,19 +74,55 @@ func keyEnumPrograms(key string, processed *[]string, results *list.List) {
 		}
 
 		*processed = append(*processed, fullProgramName)
-		appResults, _ := queryKey(key)
+
+		// Query additional information about the program
+		appResults, _ := queryKey(fullProgramName)
+		r := Row{}
+
+		// Attempt to derive the program identifying GUID
+
+		expression := regexp.MustCompile(`({[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+})$`)
+
+		identifyingNumber := expression.FindAllString(fullProgramName, -1)
+
+		if len(identifyingNumber) > 0 {
+			r["identifying_number"] = identifyingNumber[0]
+		}
 
 		for aKey := appResults.Front(); aKey != nil; aKey = aKey.Next() {
 			aRow := aKey.Value.(Row)
-			aRow = aRow
+			name := aRow["name"].(string)
 
+			if len(identifyingNumber) == 0 && name == "BundleIdentifier" {
+				r["identifying_number"] = aRow["data"].(string)
+			}
+			if name == "DisplayName" {
+				r["name"] = aRow["data"].(string)
+			}
+			if name == "DisplayVersion" {
+				r["version"] = aRow["data"].(string)
+			}
+			if name == "InstallLocation" {
+				r["install_location"] = aRow["data"].(string)
+			}
+			if name == "InstallSource" {
+				r["install_source"] = aRow["data"].(string)
+			}
+			if name == "Language" {
+				r["language"] = aRow["data"].(string)
+			}
+			if name == "Publisher" {
+				r["publisher"] = aRow["data"].(string)
+			}
+			if name == "UninstallString" {
+				r["uninstall_string"] = aRow["data"].(string)
+			}
+			if name == "InstallDate" {
+				r["install_date"] = aRow["data"].(string)
+			}
 		}
 
-		r := Row{}
-		r["name"] = fullProgramName
-		r["version"] = "comming soon"
 		results.PushBack(r)
-
 	}
 
 }

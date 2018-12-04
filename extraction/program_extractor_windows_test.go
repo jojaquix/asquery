@@ -32,7 +32,7 @@ func TestPrograms(t *testing.T) {
 
 	for e := data.Front(); e != nil; e = e.Next() {
 		v := e.Value.(Row)
-		t.Log(v["name"], v["version"])
+		t.Log(v["name"], "|", v["version"], "|", v["publisher"], "|", v["install_source"], "|", v["identifying_number"], "|")
 	}
 	//for i, v := range users {
 	//	t.Log(i, "Name: ", v["name"], " Uuid: ", v["uuid"])
