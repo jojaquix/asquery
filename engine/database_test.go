@@ -35,7 +35,8 @@ func TestDatabase_Tables(t *testing.T) {
 	sort.Strings(tableNames)
 	expected := []string{
 		"os_version",
-		//commitsTableName,
+		"users",
+		"programs",
 		//referencesTableName,
 		//treeEntriesTableName,
 		//tagsTableName,
@@ -58,14 +59,41 @@ func TestOsVersionQuery(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	res, err := cx.Query("select * from os_version where major = int64(10)")
+	res, err := cx.Query("select name, version from os_version ")
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	for res.Next() {
+		var name, version string
+		res.Scan(&name, &version)
+		t.Log(name, version)
+	}
 
+}
+
+func TestWindowsProgramsQuery(t *testing.T) {
+	assert := assert.New(t)
+	f := fixtures.Basic().One()
+	db := getDB(assert, f, testDBName)
+
+	sqle.DefaultEngine.AddDatabase(db)
+	cx, err := gosql.Open(sqle.DriverName, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := cx.Query("select name, version from programs ")
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for res.Next() {
+		var name, version string
+		res.Scan(&name, &version)
+		t.Log(name, version)
 	}
 
 }

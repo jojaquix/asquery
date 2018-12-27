@@ -21,6 +21,7 @@ type Database struct {
 	name           string
 	osVersionTable sql.Table
 	usersTable     sql.Table
+	programsTable  sql.Table
 	//cr   sql.Table
 	//tr   sql.Table
 	//rr   sql.Table
@@ -34,6 +35,7 @@ func NewDatabase(name string) sql.Database {
 		name:           name,
 		osVersionTable: tables.NewOsVersionTable(),
 		usersTable:     tables.NewUsersTable(),
+		programsTable:  tables.NewProgramsTable(),
 		//cr:   newCommitsTable(r),
 		//rr:   newReferencesTable(r),
 		//tr:   newTagsTable(r),
@@ -51,6 +53,7 @@ func (d *Database) Tables() map[string]sql.Table {
 	return map[string]sql.Table{
 		d.osVersionTable.Name(): d.osVersionTable,
 		d.usersTable.Name():     d.usersTable,
+		d.programsTable.Name():  d.programsTable,
 		//commitsTableName:     d.cr,
 		//tagsTableName:        d.tr,
 		//referencesTableName:  d.rr,

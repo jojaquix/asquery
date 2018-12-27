@@ -36,3 +36,16 @@ func Contains(a []string, x string) bool {
 	}
 	return false
 }
+
+func GetDefaultStringFromInterface(o interface{}, value string) string {
+	if o == nil {
+		return value
+	}
+	value2, ok := o.(string)
+	if !ok {
+		return value
+	} else {
+		return value2
+	}
+
+}

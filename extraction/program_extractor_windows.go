@@ -15,7 +15,6 @@ func GetPrograms() list.List {
 	results := list.New()
 	processed := make([]string, 0, 20)
 
-	generateDummie(&processed, results)
 	genPrograms(&processed, results)
 	return *results
 }
@@ -78,6 +77,17 @@ func keyEnumPrograms(key string, processed *[]string, results *list.List) {
 		// Query additional information about the program
 		appResults, _ := queryKey(fullProgramName)
 		r := Row{}
+		//default values
+		r["name"] = ""
+		r["version"] = ""
+		r["install_location"] = ""
+		r["install_source"] = ""
+		r["install_source"] = ""
+		r["language"] = ""
+		r["publisher"] = ""
+		r["uninstall_string"] = ""
+		r["install_date"] = ""
+		r["identifying_number"] = ""
 
 		// Attempt to derive the program identifying GUID
 

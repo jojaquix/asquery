@@ -21,7 +21,6 @@ func (UsersTable) Resolved() bool {
 }
 
 func (UsersTable) Name() string {
-	//return osVersionTableName
 	return "users"
 }
 
@@ -66,8 +65,6 @@ type usersIter struct {
 
 func (iter *usersIter) Next() (sql.Row, error) {
 
-	//test return just thow users
-	//change to actual extractor call
 	if iter.rowPtr == nil && !iter.fetched {
 		iter.info = extraction.GetUsers()
 		iter.rowPtr = iter.info.Front()

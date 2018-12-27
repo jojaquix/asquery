@@ -21,15 +21,21 @@ func (ProgramsTable) Resolved() bool {
 }
 
 func (ProgramsTable) Name() string {
-	//return osVersionTableName
-	return "users"
+	return "programs"
 }
 
 func (ProgramsTable) Schema() sql.Schema {
 	return sql.Schema{
-		{Name: "uid", Type: sql.BigInteger, Nullable: false},
-		{Name: "uuid", Type: sql.String, Nullable: false},
-		{Name: "username", Type: sql.String, Nullable: false},
+		{Name: "name", Type: sql.String, Nullable: false},
+		{Name: "version", Type: sql.String, Nullable: true},
+		{Name: "install_location", Type: sql.String, Nullable: true},
+		{Name: "install_source", Type: sql.String, Nullable: true},
+		{Name: "install_source", Type: sql.String, Nullable: true},
+		{Name: "language", Type: sql.String, Nullable: true},
+		{Name: "publisher", Type: sql.String, Nullable: true},
+		{Name: "uninstall_string", Type: sql.String, Nullable: true},
+		{Name: "install_date", Type: sql.String, Nullable: true},
+		{Name: "identifying_number", Type: sql.String, Nullable: true},
 	}
 }
 
@@ -43,7 +49,7 @@ func (r *ProgramsTable) TransformExpressionsUp(f func(sql.Expression) sql.Expres
 
 func (r ProgramsTable) RowIter() (sql.RowIter, error) {
 
-	var iter sql.RowIter = &usersIter{}
+	var iter sql.RowIter = &programsIter{}
 	return iter, nil
 }
 
@@ -84,11 +90,16 @@ func (iter *programsIter) Close() error {
 
 func programsRowToSqlRow(info extraction.Row) sql.Row {
 
-	//TODO why queries only works with Type.BigInteger <-> int64
-
 	return sql.NewRow(
-		info["uid"].(int64),
-		info["uuid"].(string),
-		info["username"].(string),
+		info["name"].(string),
+		info["version"].(string),
+		info["install_location"].(string),
+		info["install_source"].(string),
+		info["install_source"].(string),
+		info["language"].(string),
+		info["publisher"].(string),
+		info["uninstall_string"].(string),
+		info["install_date"].(string),
+		info["identifying_number"].(string),
 	)
 }
