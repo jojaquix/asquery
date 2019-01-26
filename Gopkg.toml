@@ -30,3 +30,7 @@
 [[constraint]]
   name = "gopkg.in/src-d/go-git-fixtures.v3"
   version = "3.0.0"
+
+[[constraint]]
+  name = "github.com/StackExchange/wmi"
+  version = "1.0.0"

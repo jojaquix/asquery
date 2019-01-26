@@ -82,7 +82,6 @@ func keyEnumPrograms(key string, processed *[]string, results *list.List) {
 		r["version"] = ""
 		r["install_location"] = ""
 		r["install_source"] = ""
-		r["install_source"] = ""
 		r["language"] = ""
 		r["publisher"] = ""
 		r["uninstall_string"] = ""
